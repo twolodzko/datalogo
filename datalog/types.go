@@ -7,19 +7,15 @@ import (
 	"unicode"
 )
 
-type Const interface {
-	~string | ~int
+// TODO
+type Database struct {
+	Facts map[string][][]string
+	Rules map[string][]Rule
 }
 
-type (
-	String   string
-	Wildcard struct{}
-)
+type Wildcard struct{}
 
-type Var struct {
-	Name    string
-	Counter uint
-}
+type Var string
 
 type Atom struct {
 	Name string
@@ -28,7 +24,7 @@ type Atom struct {
 
 type Rule struct {
 	Atom
-	Body []Evaluable
+	Body []Match
 }
 
 // Constraints are basic inequalities and equalities applied to primitive types.
@@ -38,8 +34,20 @@ type Constraint struct {
 	Lhs, Rhs any
 }
 
-type Evaluable interface {
-	Eval(Vars, Database, chan<- Vars)
+type Match interface {
+	Matches(Vars, Database) bool
+}
+
+func (a Atom) Matches(vars Vars, db Database) bool {
+	return false
+}
+
+func (r Rule) Matches(vars Vars, db Database) bool {
+	return false
+}
+
+func (c Constraint) Matches(vars Vars, db Database) bool {
+	return false
 }
 
 type Assertion struct {
@@ -74,21 +82,6 @@ func (w Wildcard) String() string {
 	return "_"
 }
 
-func (v Var) String() string {
-	if v.Counter == 0 {
-		return v.Name
-	}
-	return fmt.Sprintf("%s.%d", v.Name, v.Counter)
-}
-
-func (s String) String() string {
-	str := string(s)
-	if isAlphanum(str) {
-		return str
-	}
-	return fmt.Sprintf("\"%s\"", str)
-}
-
 func stringify[T any](vals []T) string {
 	var elems []string
 	for _, val := range vals {
@@ -107,4 +100,8 @@ func isAlphanum(s string) bool {
 		}
 	}
 	return true
+}
+
+func (a Atom) Eval(vars Vars, _ Database) {
+	// TODO
 }

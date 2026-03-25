@@ -203,7 +203,7 @@ wildcard   ::= "_" ;
 rule       ::= atom ":-" literal ( "," literal )* "." ;
 literal    ::= atom | arithmetic ;
 arithmetic ::= constant operator constant ;
-operator   ::= "=" | "!=" | "<" | "<=" | ">" | ">=" | "in"
+operator   ::= "=" | "!=" | "<" | "<=" | ">" | ">=" 
 ```
 
 

@@ -94,11 +94,11 @@ func (p *Parser) readInput() (Input, error) {
 		switch key {
 		case "source":
 			switch val := val.(type) {
-			case datalog.String:
+			case string:
 				if val == "stdin" {
-					res.Source = string(val)
+					res.Source = val
 				} else {
-					res.Source, err = parsePath(string(val))
+					res.Source, err = parsePath(val)
 					if err != nil {
 						return Input{}, err
 					}
@@ -108,8 +108,8 @@ func (p *Parser) readInput() (Input, error) {
 			}
 		case "separator", "sep":
 			switch val := val.(type) {
-			case datalog.String:
-				res.Separator = string(val)
+			case string:
+				res.Separator = val
 			default:
 				return Input{}, WrongValue{key, val}
 			}
@@ -122,8 +122,8 @@ func (p *Parser) readInput() (Input, error) {
 			}
 		case "columns", "cols":
 			switch val := val.(type) {
-			case datalog.String:
-				cols, err := parseColumns(string(val))
+			case string:
+				cols, err := parseColumns(val)
 				if err != nil {
 					return Input{}, err
 				}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
 
 	//lint:ignore ST1001 this is an internal dependency
 	. "github.com/twolodzko/datalogo/datalog"
@@ -72,7 +71,7 @@ func (p *Parser) Next() (any, error) {
 	}
 }
 
-func (p *Parser) readLiteral() (Evaluable, error) {
+func (p *Parser) readLiteral() (Match, error) {
 	first, err := p.readToken()
 	if err != nil {
 		return nil, err
@@ -115,8 +114,8 @@ func (p *Parser) expect(expected string) error {
 	return nil
 }
 
-func (p *Parser) readBody() ([]Evaluable, error) {
-	var body []Evaluable
+func (p *Parser) readBody() ([]Match, error) {
+	var body []Match
 	for {
 		atom, err := p.readLiteral()
 		if err != nil {
@@ -140,7 +139,7 @@ func (p *Parser) readBody() ([]Evaluable, error) {
 	}
 }
 
-func optimizeBody(body []Evaluable) {
+func optimizeBody(body []Match) {
 	// re-order the body to put the constraints at the back
 	sort.Slice(body, func(i, j int) bool {
 		if _, ok := body[i].(Atom); ok {
@@ -185,30 +184,22 @@ func (p *Parser) readTerm() (any, error) {
 
 func parseTerm(token string) (any, error) {
 	if len(token) == 0 {
-		return String(""), nil
+		return "", nil
 	}
 	switch {
-	case isIdentifier(token):
-		return String(token), nil
 	case isVariable(token):
-		return Var{Name: token}, nil
+		return Var(token), nil
 	case token == "_":
 		return Wildcard{}, nil
-	case isNumber(token):
-		integer, err := strconv.Atoi(token)
-		if err == nil {
-			return integer, nil
-		}
-		return String(token), nil
 	case token[0] == '"':
 		end := len(token) - 1
 		if end == 0 || token[end] != '"' {
 			return nil, fmt.Errorf("invalid string: '%s'", token)
 		}
 		str := token[1:end]
-		return String(str), nil
+		return str, nil
 	default:
-		return nil, UnexpectedToken{token}
+		return token, nil
 	}
 }
 
@@ -220,13 +211,9 @@ func isVariable(token string) bool {
 	return 'A' <= token[0] && token[0] <= 'Z'
 }
 
-func isNumber(token string) bool {
-	return ('0' <= token[0] && token[0] <= '9') || token[0] == '-' || token[0] == '+'
-}
-
 func isOperator(token string) bool {
 	switch token {
-	case "=", "!=", "<", "<=", ">", ">=", "in":
+	case "=", "!=", "<", "<=", ">", ">=":
 		return true
 	default:
 		return false
