@@ -3,7 +3,7 @@ package datalog
 import "slices"
 
 type Query struct {
-	vars []string
+	vars []Mapping
 	body [][]QueryElement
 }
 

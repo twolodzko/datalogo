@@ -5,7 +5,7 @@ type Vars []Mapping
 
 type Mapping struct {
 	Key Var
-	Val string
+	Val any
 }
 
 // // Unify the two values and return the status.
