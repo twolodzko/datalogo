@@ -52,68 +52,6 @@ mortal(Y)?         % list everyone (Y) who is mortal
 
 The query would return a set of answers matching it.
 
-## Database
-
-The facts and rules are stored in a *database*, which is implemented
-as a tree structure for an efficient retrieval.
-For example, the following facts
-
-```prolog
-foo(a, b, c).
-foo(a, X).
-foo(a, b, d).
-```
-
-would be stored as
-
-```text
-          foo
-            \
-             a
-            / \
-           b   ?
-          / \   \
-         c   d  foo(a,X)
-        /     \
-foo(a,b,c)   foo(a,b,d)
-```
-
-In the diagram above the variable `X` is shown as `?` in the node's value
-because both named variables and wildcards are represented the
-same on the branches.
-
-When the database is queried, the branches of the tree are traversed as
-long as they are matching the arguments of the query. When the final node
-is reached, the value stored in the node is *[unified]* with the query
-and the result is returned only if it matches.
-
-The following facts
-
-```prolog
-bar(a).
-bar(b).
-```
-
-would be stored as
-
-```text
-     bar
-     / \
-    a   b
-   /     \
- bar(a)  bar(b)
-```
-
-If we query the database for `bar(a)?`, the search would traverse only
-the left branch of the tree. However, the query `bar(X)?` would traverse
-and match both branches, returning two results.
-
-The database operations are performed concurrently and the results are
-returned in an indeterministic order. The tree search is performed by
-recursively spawning goroutines per each branch of the tree until either
-failing or finding the match. When the result is found, is is send back
-through a Go channel to the querying process.
-
 ## Query evaluation and unification
 
 When a query like `same(X, 1)?` is unified with the fact `same(A, A).`
@@ -201,13 +139,12 @@ number     ::= ( "+" | "-" )? DIGIT+
 variable   ::= UPPERCASE ( ALPHA | DIGIT | "_" )* ;
 wildcard   ::= "_" ;
 rule       ::= atom ":-" literal ( "," literal )* "." ;
-literal    ::= atom | arithmetic ;
-arithmetic ::= constant operator constant ;
-operator   ::= "=" | "!=" | "<" | "<=" | ">" | ">=" 
+literal    ::= atom | constraint | "not" literal ;
+constraint ::= constant operator constant ;
+operator   ::= "=" | "!=" | "<" | "<=" | ">" | ">="
 ```
 
-
- [Datalog]: https://en.wikipedia.org/wiki/Datalog
- [specification]: https://datalog-specs.info/vnd_datalog_text/abstract.html
- [unified]: https://en.wikipedia.org/wiki/Unification_(computer_science)
- ["Correcting A Widespread Error in Unification Algorithms"]: https://norvig.com/unify-bug.pdf
+[Datalog]: https://en.wikipedia.org/wiki/Datalog
+[specification]: https://datalog-specs.info/vnd_datalog_text/abstract.html
+[unified]: https://en.wikipedia.org/wiki/Unification_(computer_science)
+["Correcting A Widespread Error in Unification Algorithms"]: https://norvig.com/unify-bug.pdf

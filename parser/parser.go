@@ -51,11 +51,11 @@ func (p *Parser) Next() (any, error) {
 
 	switch token {
 	case ".":
-		return Assertion{Fact: atom}, nil
+		return Assertion{atom}, nil
 	case "?":
-		return Query{Query: atom}, nil
+		return Question{atom}, nil
 	case "~":
-		return Retraction{Fact: atom}, nil
+		return Retraction{atom}, nil
 	case ":-":
 		body, err := p.readBody()
 		if err != nil {
@@ -65,7 +65,7 @@ func (p *Parser) Next() (any, error) {
 			Atom: atom,
 			Body: body,
 		}
-		return Assertion{Fact: rule}, nil
+		return Assertion{rule}, nil
 	default:
 		return nil, UnexpectedToken{token}
 	}

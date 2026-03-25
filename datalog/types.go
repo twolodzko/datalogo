@@ -22,6 +22,9 @@ type Atom struct {
 	Args []any
 }
 
+// TODO
+type Match any
+
 type Rule struct {
 	Atom
 	Body []Match
@@ -34,32 +37,16 @@ type Constraint struct {
 	Lhs, Rhs any
 }
 
-type Match interface {
-	Matches(Vars, Database) bool
-}
-
-func (a Atom) Matches(vars Vars, db Database) bool {
-	return false
-}
-
-func (r Rule) Matches(vars Vars, db Database) bool {
-	return false
-}
-
-func (c Constraint) Matches(vars Vars, db Database) bool {
-	return false
-}
-
 type Assertion struct {
 	Fact any
 }
 
 type Retraction struct {
-	Fact Atom
+	Atom
 }
 
-type Query struct {
-	Query Atom
+type Question struct {
+	Atom
 }
 
 func (lhs Atom) Equal(rhs Atom) bool {
