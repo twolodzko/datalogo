@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+// reduce constraints
+// * any is replaced by whatever constraint
+// * < is included in <=
+// * < is included in <=
+// * < X & = X --> <= X
+// * = has lower priority than !=
+// * CONST (< | <=) VARIABLE --> VARIABLE op CONST
+
 // func (c Constraint) Eval(vars Vars, _ Database, ch chan<- Vars) {
 // 	lhs := vars.expand(c.Lhs)
 // 	rhs := vars.expand(c.Rhs)
@@ -12,9 +20,35 @@ import (
 // 	}
 // }
 
+// func (c Constraint) simplify() any {
+// 	if _, ok := c.Lhs.(Any); ok {
+// 		return Any{}
+// 	}
+// 	if _, ok := c.Rhs.(Any); ok {
+// 		return Any{}
+// 	}
+// 	if _, ok := c.Rhs.(Variable); ok {
+// 		if _, ok := c.Lhs.(Variable); ok {
+// 			return c
+// 		}
+// 		switch c.Op {
+// 		case "<":
+// 			c.Op = ">"
+// 		case "<=":
+// 			c.Op = ">="
+// 		case ">":
+// 			c.Op = "<"
+// 		case ">=":
+// 			c.Op = "<="
+// 		}
+// 		c.Lhs, c.Rhs = c.Rhs, c.Lhs
+// 	}
+// 	return c
+// }
+
 // Check if the constraint holds for the arguments.
-func (c Constraint) compare(lhs, rhs string) bool {
-	switch c.Op {
+func compare(op, lhs, rhs string) bool {
+	switch op {
 	case "=":
 		return lhs == rhs
 	case "!=":
@@ -28,7 +62,7 @@ func (c Constraint) compare(lhs, rhs string) bool {
 	case ">=":
 		return lhs >= rhs
 	default:
-		panic(fmt.Sprintf("invalid operator: %s", c.Op))
+		panic(fmt.Sprintf("invalid operator: %s", op))
 	}
 }
 

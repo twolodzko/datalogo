@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"sort"
 
 	//lint:ignore ST1001 this is an internal dependency
 	. "github.com/twolodzko/datalogo/datalog"
@@ -83,20 +82,25 @@ func (p *Parser) readLiteral() (Match, error) {
 	switch {
 	case next == "(":
 		args, err := p.readArgs()
+		if err != nil {
+			return nil, err
+		}
+		if isOperator(first) && len(args) != 2 {
+			return nil, fmt.Errorf("%s has wrong number of arguments: %d != 2", first, len(args))
+		}
 		return Atom{
 			Name: first,
 			Args: args,
-		}, err
+		}, nil
 	case isOperator(next):
 		lhs, err := parseTerm(first)
 		if err != nil {
 			return nil, err
 		}
 		rhs, err := p.readTerm()
-		return Constraint{
-			Op:  next,
-			Rhs: rhs,
-			Lhs: lhs,
+		return Atom{
+			Name: next,
+			Args: []any{lhs, rhs},
 		}, err
 	default:
 		return nil, UnexpectedToken{next}
@@ -131,7 +135,7 @@ func (p *Parser) readBody() ([]Match, error) {
 		case ",", "&":
 			// expected
 		case ".":
-			optimizeBody(body)
+			// optimizeBody(body)
 			return body, nil
 		default:
 			return nil, UnexpectedToken{token}
@@ -139,16 +143,16 @@ func (p *Parser) readBody() ([]Match, error) {
 	}
 }
 
-func optimizeBody(body []Match) {
-	// re-order the body to put the constraints at the back
-	sort.Slice(body, func(i, j int) bool {
-		if _, ok := body[i].(Atom); ok {
-			_, ok := body[j].(Constraint)
-			return ok
-		}
-		return false
-	})
-}
+// func optimizeBody(body []Match) {
+// 	// re-order the body to put the constraints at the back
+// 	sort.Slice(body, func(i, j int) bool {
+// 		if _, ok := body[i].(Atom); ok {
+// 			_, ok := body[j].(Constraint)
+// 			return ok
+// 		}
+// 		return false
+// 	})
+// }
 
 func (p *Parser) readArgs() ([]any, error) {
 	var args []any
@@ -188,9 +192,9 @@ func parseTerm(token string) (any, error) {
 	}
 	switch {
 	case isVariable(token):
-		return Var(token), nil
+		return Variable(token), nil
 	case token == "_":
-		return Wildcard{}, nil
+		return Any{}, nil
 	case token[0] == '"':
 		end := len(token) - 1
 		if end == 0 || token[end] != '"' {
@@ -225,5 +229,5 @@ type UnexpectedToken struct {
 }
 
 func (err UnexpectedToken) Error() string {
-	return fmt.Sprintf("unexpected token: '%s'", err.token)
+	return fmt.Sprintf("unexpected: '%s'", err.token)
 }

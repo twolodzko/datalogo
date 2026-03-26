@@ -4,7 +4,7 @@ package datalog
 type Vars []Mapping
 
 type Mapping struct {
-	Key Var
+	Key Variable
 	Val any
 }
 

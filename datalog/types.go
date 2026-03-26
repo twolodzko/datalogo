@@ -13,9 +13,9 @@ type Database struct {
 	Rules map[string][]Rule
 }
 
-type Wildcard struct{}
+type Any struct{}
 
-type Var string
+type Variable string
 
 type Atom struct {
 	Name string
@@ -32,10 +32,10 @@ type Rule struct {
 
 // Constraints are basic inequalities and equalities applied to primitive types.
 // See: https://souffle-lang.github.io/constraints
-type Constraint struct {
-	Op       string
-	Lhs, Rhs any
-}
+// type Constraint struct {
+// 	Op       string
+// 	Lhs, Rhs any
+// }
 
 type Assertion struct {
 	Fact any
@@ -61,11 +61,11 @@ func (r Rule) String() string {
 	return fmt.Sprintf("%s(%v) :- %v", r.Name, stringify(r.Args), stringify(r.Body))
 }
 
-func (c Constraint) String() string {
-	return fmt.Sprintf("%v %s %v", c.Lhs, c.Op, c.Rhs)
-}
+// func (c Constraint) String() string {
+// 	return fmt.Sprintf("%v %s %v", c.Lhs, c.Op, c.Rhs)
+// }
 
-func (w Wildcard) String() string {
+func (w Any) String() string {
 	return "_"
 }
 
