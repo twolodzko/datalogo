@@ -95,24 +95,25 @@ func isAlphanum(s string) bool {
 }
 
 type Literal interface {
-	Eval(Vars, Database) bool
+	Query(Vars, Database) ([]Vars, bool)
 }
 
-func (a Atom) Eval(vars Vars, _ Database) bool {
+func (a Atom) Query(vars Vars, db Database) ([]Vars, bool) {
 	// TODO
-	return false
+	// for val in db.Find(a) { if vars.Unify(a, val) { out = append(out, ...)  }  }
+	return nil, false
 }
 
-func (a Constraint) Eval(vars Vars, _ Database) bool {
+func (a Constraint) Query(vars Vars, _ Database) ([]Vars, bool) {
 	lhs, ok := vars.Reify(a.Lhs)
 	if !ok {
-		return false
+		return nil, false
 	}
 	rhs, ok := vars.Reify(a.Rhs)
 	if !ok {
-		return false
+		return nil, false
 	}
-	return compare(a.Op, lhs, rhs)
+	return []Vars{vars}, compare(a.Op, lhs, rhs)
 }
 
 // Check if the constraint holds for the arguments.
