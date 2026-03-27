@@ -104,19 +104,15 @@ func (a Atom) Eval(vars Vars, _ Database) bool {
 }
 
 func (a Constraint) Eval(vars Vars, _ Database) bool {
-	lhs, rhs := a.Lhs, a.Rhs
-	if key, ok := lhs.(Variable); ok {
-		val, _ := vars.Get(key)
-		// TODO
-		lhs = val
+	lhs, ok := vars.Reify(a.Lhs)
+	if !ok {
+		return false
 	}
-	if key, ok := rhs.(Variable); ok {
-		val, _ := vars.Get(key)
-		// TODO
-		rhs = val
+	rhs, ok := vars.Reify(a.Rhs)
+	if !ok {
+		return false
 	}
-	// TODO
-	return compare(a.Op, lhs.(string), rhs.(string))
+	return compare(a.Op, lhs, rhs)
 }
 
 // Check if the constraint holds for the arguments.

@@ -40,12 +40,20 @@ func (v *Vars) Unify(lhs, rhs any) bool {
 }
 
 // Materialize the unified variable
-func (v *Vars) Reify(key Variable, start int) (string, bool) {
+func (v *Vars) Reify(key any) (string, bool) {
+	if key, ok := key.(Variable); ok {
+		return v.reify(key, 0)
+	}
+	val, ok := key.(string)
+	return val, ok
+}
+
+func (v *Vars) reify(key Variable, start int) (string, bool) {
 	for i := start; i < len(v.Mapping); i++ {
 		if v.Mapping[i].Key == key {
 			val := v.Mapping[i].Val
 			if val, ok := val.(Variable); ok {
-				val, ok := v.Reify(val, i+1)
+				val, ok := v.reify(val, i+1)
 				if ok {
 					// so we don't repeat the search next time
 					v.Mapping[i].Val = val
@@ -59,7 +67,7 @@ func (v *Vars) Reify(key Variable, start int) (string, bool) {
 	return "", false
 }
 
-func (vars Vars) unifyAll(lhs, rhs []any) (bool, Vars) {
+func (vars Vars) UnifyAll(lhs, rhs []any) (bool, Vars) {
 	if len(lhs) != len(rhs) {
 		return false, vars
 	}
