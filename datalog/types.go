@@ -15,7 +15,11 @@ type Database struct {
 
 type Any struct{}
 
-type Variable string
+type Variable struct {
+	Name string
+	//
+	Scope int
+}
 
 type Atom struct {
 	Name string
@@ -66,6 +70,10 @@ func (w Any) String() string {
 	return "_"
 }
 
+func (v Variable) String() string {
+	return v.Name
+}
+
 func stringify[T any](vals []T) string {
 	var elems []string
 	for _, val := range vals {
@@ -98,16 +106,17 @@ func (a Atom) Eval(vars Vars, _ Database) bool {
 func (a Constraint) Eval(vars Vars, _ Database) bool {
 	lhs, rhs := a.Lhs, a.Rhs
 	if key, ok := lhs.(Variable); ok {
-		val, ok := vars.Get(key)
+		val, _ := vars.Get(key)
 		// TODO
 		lhs = val
 	}
 	if key, ok := rhs.(Variable); ok {
-		val, ok := vars.Get(key)
+		val, _ := vars.Get(key)
 		// TODO
 		rhs = val
 	}
-	return compare(a.Op, lhs, rhs)
+	// TODO
+	return compare(a.Op, lhs.(string), rhs.(string))
 }
 
 // Check if the constraint holds for the arguments.

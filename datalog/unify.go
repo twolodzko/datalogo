@@ -12,6 +12,13 @@ type Mapping struct {
 // When unifying with variables, store the
 // substitution.
 func (v *Vars) Unify(lhs, rhs any) bool {
+	if key, ok := lhs.(Variable); ok {
+		// TODO: use birth records to optimize it
+		lhs, _ = v.Get(key)
+	}
+	if key, ok := rhs.(Variable); ok {
+		rhs, _ = v.Get(key)
+	}
 	if lhs == rhs {
 		return true
 	}
@@ -33,12 +40,12 @@ func (v *Vars) Unify(lhs, rhs any) bool {
 }
 
 // Materialize the unified variable
-func (v *Vars) Reify(key Variable) (string, bool) {
-	for i := range len(v.Mapping) {
+func (v *Vars) Reify(key Variable, start int) (string, bool) {
+	for i := start; i < len(v.Mapping); i++ {
 		if v.Mapping[i].Key == key {
 			val := v.Mapping[i].Val
 			if val, ok := val.(Variable); ok {
-				val, ok := v.Reify(val)
+				val, ok := v.Reify(val, i+1)
 				if ok {
 					// so we don't repeat the search next time
 					v.Mapping[i].Val = val

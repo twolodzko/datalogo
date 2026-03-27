@@ -1,9 +1,5 @@
 package datalog
 
-import (
-	"fmt"
-)
-
 // reduce constraints
 // * any is replaced by whatever constraint
 // * < is included in <=

@@ -10,6 +10,8 @@ import (
 	. "github.com/twolodzko/datalogo/datalog"
 )
 
+var statementCounter = 0
+
 type Parser struct {
 	*bufio.Reader
 }
@@ -27,6 +29,7 @@ func (p *Parser) Next() (any, error) {
 	var atom Atom
 	switch {
 	case isIdentifier(head):
+		statementCounter++
 		if err = p.expect("("); err != nil {
 			return nil, err
 		}
@@ -194,7 +197,10 @@ func parseTerm(token string) (any, error) {
 	}
 	switch {
 	case isVariable(token):
-		return Variable(token), nil
+		return Variable{
+			Name:  token,
+			Scope: statementCounter,
+		}, nil
 	case token == "_":
 		return Any{}, nil
 	case token[0] == '"':
