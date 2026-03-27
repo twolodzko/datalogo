@@ -22,20 +22,17 @@ type Atom struct {
 	Args []any
 }
 
-// TODO
-type Match any
-
 type Rule struct {
 	Atom
-	Body []Match
+	Body []Literal
 }
 
 // Constraints are basic inequalities and equalities applied to primitive types.
 // See: https://souffle-lang.github.io/constraints
-// type Constraint struct {
-// 	Op       string
-// 	Lhs, Rhs any
-// }
+type Constraint struct {
+	Op       string
+	Lhs, Rhs any
+}
 
 type Assertion struct {
 	Fact any
@@ -61,9 +58,9 @@ func (r Rule) String() string {
 	return fmt.Sprintf("%s(%v) :- %v", r.Name, stringify(r.Args), stringify(r.Body))
 }
 
-// func (c Constraint) String() string {
-// 	return fmt.Sprintf("%v %s %v", c.Lhs, c.Op, c.Rhs)
-// }
+func (c Constraint) String() string {
+	return fmt.Sprintf("%v %s %v", c.Lhs, c.Op, c.Rhs)
+}
 
 func (w Any) String() string {
 	return "_"
@@ -89,6 +86,46 @@ func isAlphanum(s string) bool {
 	return true
 }
 
-func (a Atom) Eval(vars Vars, _ Database) {
+type Literal interface {
+	Eval(Vars, Database) bool
+}
+
+func (a Atom) Eval(vars Vars, _ Database) bool {
 	// TODO
+	return false
+}
+
+func (a Constraint) Eval(vars Vars, _ Database) bool {
+	lhs, rhs := a.Lhs, a.Rhs
+	if key, ok := lhs.(Variable); ok {
+		val, ok := vars.Get(key)
+		// TODO
+		lhs = val
+	}
+	if key, ok := rhs.(Variable); ok {
+		val, ok := vars.Get(key)
+		// TODO
+		rhs = val
+	}
+	return compare(a.Op, lhs, rhs)
+}
+
+// Check if the constraint holds for the arguments.
+func compare(op, lhs, rhs string) bool {
+	switch op {
+	case "=":
+		return lhs == rhs
+	case "!=":
+		return lhs != rhs
+	case "<":
+		return lhs < rhs
+	case "<=":
+		return lhs <= rhs
+	case ">":
+		return lhs > rhs
+	case ">=":
+		return lhs >= rhs
+	default:
+		panic(fmt.Sprintf("invalid operator: %s", op))
+	}
 }

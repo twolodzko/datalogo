@@ -46,26 +46,6 @@ import (
 // 	return c
 // }
 
-// Check if the constraint holds for the arguments.
-func compare(op, lhs, rhs string) bool {
-	switch op {
-	case "=":
-		return lhs == rhs
-	case "!=":
-		return lhs != rhs
-	case "<":
-		return lhs < rhs
-	case "<=":
-		return lhs <= rhs
-	case ">":
-		return lhs > rhs
-	case ">=":
-		return lhs >= rhs
-	default:
-		panic(fmt.Sprintf("invalid operator: %s", op))
-	}
-}
-
 // // If key is a variable and has a value, return the value, otherwise return it.
 // func (vars Vars) expand(key any) any {
 // 	for {

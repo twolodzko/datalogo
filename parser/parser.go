@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"sort"
 
 	//lint:ignore ST1001 this is an internal dependency
 	. "github.com/twolodzko/datalogo/datalog"
@@ -70,7 +71,7 @@ func (p *Parser) Next() (any, error) {
 	}
 }
 
-func (p *Parser) readLiteral() (Match, error) {
+func (p *Parser) readLiteral() (Literal, error) {
 	first, err := p.readToken()
 	if err != nil {
 		return nil, err
@@ -98,9 +99,10 @@ func (p *Parser) readLiteral() (Match, error) {
 			return nil, err
 		}
 		rhs, err := p.readTerm()
-		return Atom{
-			Name: next,
-			Args: []any{lhs, rhs},
+		return Constraint{
+			Op:  next,
+			Lhs: lhs,
+			Rhs: rhs,
 		}, err
 	default:
 		return nil, UnexpectedToken{next}
@@ -118,8 +120,8 @@ func (p *Parser) expect(expected string) error {
 	return nil
 }
 
-func (p *Parser) readBody() ([]Match, error) {
-	var body []Match
+func (p *Parser) readBody() ([]Literal, error) {
+	var body []Literal
 	for {
 		atom, err := p.readLiteral()
 		if err != nil {
@@ -135,7 +137,7 @@ func (p *Parser) readBody() ([]Match, error) {
 		case ",", "&":
 			// expected
 		case ".":
-			// optimizeBody(body)
+			optimizeBody(body)
 			return body, nil
 		default:
 			return nil, UnexpectedToken{token}
@@ -143,16 +145,16 @@ func (p *Parser) readBody() ([]Match, error) {
 	}
 }
 
-// func optimizeBody(body []Match) {
-// 	// re-order the body to put the constraints at the back
-// 	sort.Slice(body, func(i, j int) bool {
-// 		if _, ok := body[i].(Atom); ok {
-// 			_, ok := body[j].(Constraint)
-// 			return ok
-// 		}
-// 		return false
-// 	})
-// }
+func optimizeBody(body []Literal) {
+	// re-order the body to put the constraints at the back
+	sort.Slice(body, func(i, j int) bool {
+		if _, ok := body[i].(Atom); ok {
+			a, ok := body[j].(Atom)
+			return ok && isOperator(a.Name)
+		}
+		return false
+	})
+}
 
 func (p *Parser) readArgs() ([]any, error) {
 	var args []any
